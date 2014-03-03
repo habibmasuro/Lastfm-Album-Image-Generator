@@ -132,7 +132,7 @@ class Lastfm extends BaseController {
 		$start = Carbon::now();
 		
 		// Optimise this image!
-		exec ( './optipng -o' . $data['level'] . ' -quiet ' . $data['image'] ); //. ' -out ' . $name );
+		exec ( './app/commands/optipng -o' . $data['level'] . ' -quiet ' . $data['image'] ); //. ' -out ' . $name );
 		
 		$diff = ( $start->diffInSeconds() == 1 ) ? $start->diffInSeconds() . ' second' : $start->diffInSeconds() . ' seconds';
 		
