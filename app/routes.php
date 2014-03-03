@@ -11,4 +11,4 @@
 |
 */
 
-Route::get('/', 'Lastfm\Controller\Lastfm@leader' );
+Route::get('/', 'LastfmController@leader' );

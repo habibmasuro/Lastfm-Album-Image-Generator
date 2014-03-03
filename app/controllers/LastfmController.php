@@ -1,16 +1,16 @@
 <?php
 
-namespace Lastfm\Controller;
+class LastfmException extends Exception {}
 
-use Input;
-use Validator;
-use BaseController;
-use Image;
-use Queue;
-use Carbon;
-use Log;
+App::error( function ( LastfmException $e , $errorCode , $fromConsole ) {
+	if ( $fromConsole ) {
+		return 'Error (' . $errorCode . '): ' . $e->getMessage() . "\n";
+	}
+	
+	return '<h1>Error: ' . $e->getMessage() . '</h1>';
+} );
 
-class Lastfm extends BaseController {
+class LastfmController extends BaseController {
 	public $text = [
 		'colours' => [
 			'border' => [ 204 , 204 , 204 ] ,
@@ -59,7 +59,7 @@ class Lastfm extends BaseController {
 		} else {
 			var_dump( $validator->messages() );
 		}
-		
+				
 		$url = 'http://ws.audioscrobbler.com/2.0/?method=library.getalbums&api_key=561e763a09d252d2bbf70beec4897d91&user=' . $this->username . '&limit=10&format=json';
 		
 		$ch = curl_init ( $url );
@@ -74,12 +74,21 @@ class Lastfm extends BaseController {
 		
 		$this->generateImage ( $this->result['image'][3]['#text'] );
 	}
+	
+	public function getAlbumNumber () {
+		
+	}
 	 
 	public function generateImage( $url ) {
 		$name = $this->username . '_' . $this->number . '_' . md5( time() ) . '.png';
 		
 		// Pull image from Last.fm and create the Image instance
-		$image = Image::make( $url );
+		try {
+			$image = Image::make( $url );
+		} catch ( Exception $e ) {
+			Log::error ( 'Image path is invalid' , [ 'message' => 'Error: ' . $e->getMessage() , 'url' => $url , 'code' => $e->getCode() ] );
+			throw new \Exception( );
+		}
 		
 		// Resize image to 300x300 px
 		$image->resize ( 300 , 300 );
@@ -119,11 +128,13 @@ class Lastfm extends BaseController {
 		
 		Log::info ( 'Finished generating image non-optimised image' );
 		
+		// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
+		// start generating smaller images straight away
 		$seconds = mt_rand ( 10 , 99 );
 		
 		Log::info ( 'Sent image to optimiser queue, starting in ' . $seconds . ' seconds' );
 		// Send the image to the optimiser for the next requests...
-		Queue::later ( $seconds , 'Lastfm\Controller\Lastfm@optimiseImage' , [ 'image' => $name , 'level' => 2 ] );
+		Queue::later ( $seconds , 'LastfmController@optimiseImage' , [ 'image' => $name , 'level' => 2 ] );
 	}
 	
 	public function optimiseImage ( $job , $data ) {
