@@ -11,6 +11,12 @@ App::error( function ( LastfmException $e , $errorCode , $fromConsole ) {
 } );
 
 class LastfmController extends BaseController {
+	
+	/**
+	 * The text formatting settings.
+	 *
+	 * @var array
+	 */
 	public $text = [
 		'colours' => [
 			'border' => [ 204 , 204 , 204 ] ,
@@ -26,30 +32,59 @@ class LastfmController extends BaseController {
 		] ,
 	];
 	
+	/**
+	 * The Last.fm username
+	 *
+	 * @var string
+	 */
 	protected $username;
 	
+	/**
+	 * The Top 10 number
+	 *
+	 * @var string
+	 */
 	protected $number;
 	
+	/**
+	 * The request type, image or link
+	 *
+	 * @var string
+	 */
 	protected $type;
 	
+	/**
+	 * The API url
+	 *
+	 * @var string
+	 */
 	protected $url;
 	
-	public $imageUrl;
-	
+	/**
+	 * The result of the Last.fm API request
+	 *
+	 * @var array
+	 */
 	public $result;
 	
+	/**
+	 * Follow the leader...
+	 *
+	 * @return void
+	 */
 	public function leader ( ) {
 		$result = Input::only( [ 'user' , 'num' , 'type' , 'error' ] );
 		
+		// I use this for error testing...
 		$forceError = ( isset ( $result['error'] ) ) ? true : false;
 		
+		// The validation rules
 		$rules = [
 			'user'	=> [
 				'required' ,
 				'regex:/^([a-z0-9_-]){1,30}$/i' ,
 			] ,
 			'num'	=> 'required|integer|between:1,10' ,
-			// 'type'	=> 'alpha|max:4' ,
 			'type'	=> 'in:,link' ,
 		];
 		
@@ -86,17 +121,26 @@ class LastfmController extends BaseController {
 	public function getAlbumNumber () {
 		
 	}
-	 
+	
+	/**
+	 * Generate an album image from a Last.fm URL
+	 *
+	 * @param	string	$url
+	 * @param	mixed	$error
+	 * @return	mixed
+	 */
 	public function generateImage ( $url , $error = false ) {
 		$name = $this->username . '_' . $this->number . '_' . md5( time () ) . '.png';
 		
 		if ( $error ) {
 			Log::error ( 'There was an error, generate the error image' );
+			
+			// We had an error, we're a sad panda
 			$image = Image::make ( 'public/resources/sadpanda.png' );
 		} else {
 			// Pull image from Last.fm and create the Image instance
 			try {
-				$image = Image::make ( $url . 'gif' );
+				$image = Image::make ( $url );
 			} catch ( Exception $e ) {
 				Log::error ( 'Image path is invalid' , [ 'message' => 'Error: ' . $e->getMessage () , 'url' => $url , 'code' => $e->getCode () ] );
 				
@@ -159,14 +203,22 @@ class LastfmController extends BaseController {
 		}
 	}
 	
+	/**
+	 * Optimise the image with Beanstalk and OptiPNG (supplied)
+	 *
+	 * @param	resource	\Illuminate\Queues\Jobs
+	 * @param	array		$data
+	 * @return	void
+	 */
 	public function optimiseImage ( $job , $data ) {
 		Log::info ( 'Started Job ID #' . $job->getJobId () . ' - optimising image...' );
 		
 		$start = Carbon::now ();
 		
 		// Optimise this image!
-		exec ( './app/commands/optipng -o' . $data['level'] . ' -quiet ' . $data['image'] ); //. ' -out ' . $name );
+		exec ( './app/commands/optipng -o' . $data['level'] . ' -quiet ' . $data['image'] );
 		
+		// The difference of time in seconds between 
 		$diff = ( $start->diffInSeconds () == 1 ) ? $start->diffInSeconds () . ' second' : $start->diffInSeconds () . ' seconds';
 		
 		Log::info ( 'Finished Job ID #' . $job->getJobId () . ' - optimising image, took ' . $diff );
