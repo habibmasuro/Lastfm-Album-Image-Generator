@@ -39,7 +39,9 @@ class LastfmController extends BaseController {
 	public $result;
 	
 	public function leader ( ) {
-		$result = Input::only( [ 'user' , 'num' , 'type' ] );
+		$result = Input::only( [ 'user' , 'num' , 'type' , 'error' ] );
+		
+		$forceError = ( isset ( $result['error'] ) ) ? true : false;
 		
 		$rules = [
 			'user'	=> [
@@ -47,17 +49,18 @@ class LastfmController extends BaseController {
 				'regex:/^([a-z0-9_-]){1,30}$/i' ,
 			] ,
 			'num'	=> 'required|integer|between:1,10' ,
-			'type'	=> 'alpha' ,
+			// 'type'	=> 'alpha|max:4' ,
+			'type'	=> 'in:,link' ,
 		];
 		
-		$validator = Validator::make( $result , $rules );
+		$validator = Validator::make ( $result , $rules );
 		
-		if ( $validator->passes() ) {
+		if ( $validator->passes () ) {
 			$this->username = $result['user'];
 			$this->number = $result['num'];
 			$this->type = $result['type'];
 		} else {
-			var_dump( $validator->messages() );
+			var_dump( $validator->messages () );
 		}
 				
 		$url = 'http://ws.audioscrobbler.com/2.0/?method=library.getalbums&api_key=561e763a09d252d2bbf70beec4897d91&user=' . $this->username . '&limit=10&format=json';
@@ -70,30 +73,42 @@ class LastfmController extends BaseController {
 		
 		$this->result = $curlResult['albums']['album'][ $this->number - 1 ];
 		
+		if ( $this->type == 'link' ) {
+			// Redirect time, send them to Last.fm
+			return Redirect::away ( $this->result['url'] , 301 );
+		}
+		
 		$this->imageUrl = $this->result['image'][3]['#text'];
 		
-		$this->generateImage ( $this->result['image'][3]['#text'] );
+		$this->generateImage ( $this->result['image'][3]['#text'] , $forceError );
 	}
 	
 	public function getAlbumNumber () {
 		
 	}
 	 
-	public function generateImage( $url ) {
-		$name = $this->username . '_' . $this->number . '_' . md5( time() ) . '.png';
+	public function generateImage ( $url , $error = false ) {
+		$name = $this->username . '_' . $this->number . '_' . md5( time () ) . '.png';
 		
-		// Pull image from Last.fm and create the Image instance
-		try {
-			$image = Image::make( $url );
-		} catch ( Exception $e ) {
-			Log::error ( 'Image path is invalid' , [ 'message' => 'Error: ' . $e->getMessage() , 'url' => $url , 'code' => $e->getCode() ] );
-			throw new \Exception( );
+		if ( $error ) {
+			Log::error ( 'There was an error, generate the error image' );
+			$image = Image::make ( 'public/resources/sadpanda.png' );
+		} else {
+			// Pull image from Last.fm and create the Image instance
+			try {
+				$image = Image::make ( $url . 'gif' );
+			} catch ( Exception $e ) {
+				Log::error ( 'Image path is invalid' , [ 'message' => 'Error: ' . $e->getMessage () , 'url' => $url , 'code' => $e->getCode () ] );
+				
+				// Go back and generate the error image
+				return $this->generateImage ( false , 'Unable to locate image' );
+			}
+			
+			// Resize image to 300x300 px, just in case the image is too large/small
+			$image->resize ( 300 , 300 );
 		}
 		
-		// Resize image to 300x300 px
-		$image->resize ( 300 , 300 );
-		
-		// Expand image up 41px with the background color with white
+		// Expand image up 36px with the background color with white
 		$image->resizeCanvas ( 0 , 36 , 'bottom' , true , '#fff' );
 		
 		// Larger rectangle that forms the border
@@ -102,54 +117,61 @@ class LastfmController extends BaseController {
 		// Smaller rectangle with the background
 		$image->rectangle ( 'rgb(245,245,245)' , 1 , 1 , 298 , 23 );
 		
-		$x = 0;
-		
-		// 1. or 2. (etc)
-		$image->text( $this->number . '.' , $x += 5 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
-		
-		$bbox = imagettfbbox( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->number . '.' );
-		// Artist Name
-		$image->text( $this->result['artist']['name'] , $x += $bbox[2] += 4 , 17 , $this->text['size'] , $this->text['colours']['link'] , 0 , $this->text['fonts']['normal'] );
-		
-		$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['normal'] , $this->result['artist']['name'] );
-		// Chuck in a dash
-		$image->text ( '-' , $x += $bbox[2] += 6 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['normal'] );
-		
-		$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['normal'] , '-' );
-		// And the Album Title
-		$image->text ( $this->result['name'] , $x += $bbox[2] += 4 , 17 , $this->text['size'] , $this->text['colours']['link'] , 0 , $this->text['fonts']['bold'] );
-		
-		$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->result['name'] );
-		// And the Playcount in brackets
-		$image->text ( '(' . $this->result['playcount'] . ')' , $x += $bbox[2] + 4 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['normal'] );
+		if ( $error ) {
+			$image->text ( 'Error: ' . $error , 5 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
+		} else {
+			$x = 0;
+			
+			// 1. or 2. (etc)
+			$image->text ( $this->number . '.' , $x += 5 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
+			
+			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->number . '.' );
+			// Artist Name
+			$image->text ( $this->result['artist']['name'] , $x += $bbox[2] += 4 , 17 , $this->text['size'] , $this->text['colours']['link'] , 0 , $this->text['fonts']['normal'] );
+			
+			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['normal'] , $this->result['artist']['name'] );
+			// Chuck in a dash
+			$image->text ( '-' , $x += $bbox[2] += 6 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['normal'] );
+			
+			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['normal'] , '-' );
+			// And the Album Title
+			$image->text ( $this->result['name'] , $x += $bbox[2] += 4 , 17 , $this->text['size'] , $this->text['colours']['link'] , 0 , $this->text['fonts']['bold'] );
+			
+			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->result['name'] );
+			// And the Playcount in brackets
+			$image->text ( '(' . $this->result['playcount'] . ')' , $x += $bbox[2] + 4 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['normal'] );	
+		}
 		
 		// Save the image as a .png with a quality of 90
 		$image->save ( $name , 90 );
 		
-		Log::info ( 'Finished generating image non-optimised image' );
-		
-		// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
-		// start generating smaller images straight away
-		$seconds = mt_rand ( 10 , 99 );
-		
-		Log::info ( 'Sent image to optimiser queue, starting in ' . $seconds . ' seconds' );
-		// Send the image to the optimiser for the next requests...
-		Queue::later ( $seconds , 'LastfmController@optimiseImage' , [ 'image' => $name , 'level' => 2 ] );
+		// I don't want to optimise the error messages
+		if ( !$error ) {
+			Log::info ( 'Finished generating image non-optimised image' );
+			
+			// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
+			// start generating smaller images straight away
+			$seconds = mt_rand ( 10 , 99 );
+			
+			Log::info ( 'Sent image to optimiser queue, starting in ' . $seconds . ' seconds' );
+			// Send the image to the optimiser for the next requests...
+			Queue::later ( $seconds , 'LastfmController@optimiseImage' , [ 'image' => $name , 'level' => 2 ] );
+		}
 	}
 	
 	public function optimiseImage ( $job , $data ) {
-		Log::info ( 'Started Job ID #' . $job->getJobId() . ' - optimising image...' );
+		Log::info ( 'Started Job ID #' . $job->getJobId () . ' - optimising image...' );
 		
-		$start = Carbon::now();
+		$start = Carbon::now ();
 		
 		// Optimise this image!
 		exec ( './app/commands/optipng -o' . $data['level'] . ' -quiet ' . $data['image'] ); //. ' -out ' . $name );
 		
-		$diff = ( $start->diffInSeconds() == 1 ) ? $start->diffInSeconds() . ' second' : $start->diffInSeconds() . ' seconds';
+		$diff = ( $start->diffInSeconds () == 1 ) ? $start->diffInSeconds () . ' second' : $start->diffInSeconds () . ' seconds';
 		
-		Log::info ( 'Finished Job ID #' . $job->getJobId() . ' - optimising image, took ' . $diff );
+		Log::info ( 'Finished Job ID #' . $job->getJobId () . ' - optimising image, took ' . $diff );
 		
 		// Remove job from queue
-		$job->delete();
+		$job->delete ();
 	}
 }
