@@ -58,6 +58,13 @@ class LastfmController extends BaseController {
 	public $result;
 	
 	/**
+	 * The filename of the generated image
+	 *
+	 * @var string
+	 */
+	public $filename;
+	
+	/**
 	 * Follow the leader...
 	 *
 	 * @return void
@@ -101,6 +108,7 @@ class LastfmController extends BaseController {
 		
 		$response = $client->get();
 		
+		// Ruh-roh!
 		if ( $response->getStatusCode () != 200 ) {
 			Log::error ( 'Unable to connect to Last.fm' , [ 'message' => 'Guzzle Error: ' . $response->getReasonPhrase () , 'url' => $response->getEffectiveUrl () , 'code' => $response->getStatusCode () ] );
 			
@@ -111,13 +119,34 @@ class LastfmController extends BaseController {
 		$this->result = $this->getApiResult ( $response->json () , $this->number );
 		
 		if ( $this->type == 'link' ) {
+			Log::info ( 'Sending user away to Last.fm' , [ 'url' => $this->result['url'] , 'code' => 301 , 'user' => $this->username , 'number' => $this->number ] );
+			
 			// Redirect time, send them to Last.fm
 			return Redirect::away ( $this->result['url'] , 301 );
 		}
 		
-		$this->imageUrl = $this->result['image'][3]['#text'];
+		$image = $this->generateImage ( $this->imageUrl , $forceError );
 		
-		$this->generateImage ( $this->result['image'][3]['#text'] , $forceError );
+		$size = filesize ( $this->filename );
+		
+		$headers = [
+			'Content-Type'		=> $image->mime ,
+			'Content-Length'	=> $size ,
+		];
+		
+		$response = Response::make ( $image->encoded , 200 , $headers );
+		
+		$filetime = filemtime ( $this->filename );
+		$etag = md5 ( $filetime );
+		$time = Carbon::createFromTimeStamp ($filetime)->toRFC2822String ();
+		$expires = Carbon::createFromTimeStamp ($filetime)->addWeeks (1)->toRFC2822String ();
+		
+		$response->setEtag ( $etag );
+		$response->setLastModified ( new DateTime ( $time ) );
+		$response->setExpires ( new DateTime ( $expires ) );
+		$response->setPublic ();
+		
+		return $response;
 	}
 	
 	/**
@@ -128,7 +157,11 @@ class LastfmController extends BaseController {
 	 * @return	array
 	 */
 	public function getApiResult ( $results , $number ) {
-		return $results['albums']['album'][$number - 1];
+		$result = $results['albums']['album'][$number - 1];
+		
+		$this->imageUrl = $result['image'][3]['#text'];
+		
+		return $result;
 	}
 	
 	/**
@@ -139,7 +172,7 @@ class LastfmController extends BaseController {
 	 * @return	mixed
 	 */
 	public function generateImage ( $url , $error = false ) {
-		$name = $this->username . '_' . $this->number . '_' . md5 ( time () ) . '.png';
+		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . md5 ( time () ) . '.png';
 		
 		if ( $error ) {
 			Log::error ( 'There was an error, generate the error image' );
@@ -197,7 +230,7 @@ class LastfmController extends BaseController {
 		}
 		
 		// Save the image as a .png with a quality of 90
-		$image->save ( $name , 90 );
+		$image->save ( $this->filename , 90 );
 		
 		// I don't want to optimise the error messages
 		if ( !$error ) {
@@ -209,8 +242,10 @@ class LastfmController extends BaseController {
 			
 			Log::info ( 'Sent image to optimiser queue, starting in ' . $seconds . ' seconds' );
 			// Send the image to the optimiser for the next requests...
-			Queue::later ( $seconds , 'LastfmController@optimiseImage' , [ 'image' => $name , 'level' => 2 ] );
+			Queue::later ( $seconds , 'LastfmController@optimiseImage' , [ 'image' => $this->filename , 'level' => 2 ] );
 		}
+		
+		return $image;
 	}
 	
 	/**
