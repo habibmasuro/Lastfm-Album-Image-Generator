@@ -81,22 +81,34 @@ class LastfmController extends BaseController {
 		$validator = Validator::make ( $result , $rules );
 		
 		if ( $validator->passes () ) {
-			$this->username = $result['user'];
-			$this->number = $result['num'];
-			$this->type = $result['type'];
+			$this->username	= $result['user'];
+			$this->number	= $result['num'];
+			$this->type		= $result['type'];
 		} else {
 			var_dump ( $validator->messages () );
 		}
-				
-		$url = 'http://ws.audioscrobbler.com/2.0/?method=library.getalbums&api_key=561e763a09d252d2bbf70beec4897d91&user=' . $this->username . '&limit=10&format=json';
 		
-		$ch = curl_init ( $url );
+		$client = new GuzzleHttp\Client( [
+			'base_url' => [
+				'http://ws.audioscrobbler.com/2.0/?method=library.getalbums&api_key=561e763a09d252d2bbf70beec4897d91&user={username}&limit=10&format=json' ,
+				[ 'username' => $this->username ]
+			] ,
+			'headers' => [
+				'User-Agent' => 'yesdevnull.net/lastfm Last.fm Album Image Generator' ,
+			] ,
+			'timeout' => 5 ,
+		] );
 		
-		curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , true );
+		$response = $client->get();
 		
-		$curlResult = json_decode ( curl_exec ( $ch ) , true );
+		if ( $response->getStatusCode () != 200 ) {
+			Log::error ( 'Unable to connect to Last.fm' , [ 'message' => 'Guzzle Error: ' . $response->getReasonPhrase () , 'url' => $response->getEffectiveUrl () , 'code' => $response->getStatusCode () ] );
+			
+			// Unknown error connecting to Last.fm
+			return $this->generateImage ( false , $response->getStatusCode () . ' Error when connecting to Last.fm' );
+		}
 		
-		$this->result = $curlResult['albums']['album'][ $this->number - 1 ];
+		$this->result = $this->getApiResult ( $response->json () , $this->number );
 		
 		if ( $this->type == 'link' ) {
 			// Redirect time, send them to Last.fm
@@ -108,8 +120,15 @@ class LastfmController extends BaseController {
 		$this->generateImage ( $this->result['image'][3]['#text'] , $forceError );
 	}
 	
-	public function getAlbumNumber () {
-		
+	/**
+	 * Return API result with supplied number
+	 *
+	 * @param	array	$results
+	 * @param	integer	$number
+	 * @return	array
+	 */
+	public function getApiResult ( $results , $number ) {
+		return $results['albums']['album'][$number - 1];
 	}
 	
 	/**
@@ -174,6 +193,7 @@ class LastfmController extends BaseController {
 			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->result['name'] );
 			// And the Playcount in brackets
 			$image->text ( '(' . $this->result['playcount'] . ')' , $x += $bbox[2] + 4 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['normal'] );	
+			// And we're done making the image
 		}
 		
 		// Save the image as a .png with a quality of 90
