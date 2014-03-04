@@ -174,7 +174,16 @@ class LastfmController extends BaseController {
 	 * @return	mixed
 	 */
 	public function generateImage ( $url , $error = false ) {
-		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . md5 ( time () ) . '.png';
+		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
+		
+		if ( Cache::has ( $this->filename ) ) {
+			Log::info ( 'Loaded cached object' );
+			
+			$image = Image::open ( $this->filename );
+			
+			//return $image->encode ( $this->filename , 90 );
+			return $image->response ();
+		}
 		
 		if ( $error ) {
 			// Normally, you'd only come down this path if the function was called by 
@@ -238,6 +247,10 @@ class LastfmController extends BaseController {
 		// I don't want to optimise the error message images
 		if ( !$error ) {
 			Log::info ( 'Finished generating image non-optimised image' );
+			
+			if ( Cache::add ( $this->filename , true , Carbon::now ()->addWeeks(1)->format ( 's' ) ) ) {
+				Log::info ( 'Added item to cache' );	
+			}
 			
 			// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
 			// start generating smaller images straight away
