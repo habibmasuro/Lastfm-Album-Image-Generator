@@ -19,8 +19,8 @@ class LastfmController extends BaseController {
 	 */
 	public $text = [
 		'colours' => [
-			'border' => [ 204 , 204 , 204 ] ,
-			'background' => [ 245 , 245 , 245 ] ,
+			'border' => 'rgb(204,204,204)' ,
+			'background' => 'rgb(245,245,245)' ,
 			'white' => '#fff' ,
 			'link' => 'rgb(1,135,197)' ,
 			'black' => '#000' ,
@@ -73,7 +73,7 @@ class LastfmController extends BaseController {
 	 * @return void
 	 */
 	public function leader ( ) {
-		$result = Input::only( [ 'user' , 'num' , 'type' , 'error' ] );
+		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
 		
 		// I use this for error testing...
 		$forceError = ( isset ( $result['error'] ) ) ? true : false;
@@ -95,7 +95,7 @@ class LastfmController extends BaseController {
 			$this->number = $result['num'];
 			$this->type = $result['type'];
 		} else {
-			var_dump( $validator->messages () );
+			var_dump ( $validator->messages () );
 		}
 				
 		$url = 'http://ws.audioscrobbler.com/2.0/?method=library.getalbums&api_key=561e763a09d252d2bbf70beec4897d91&user=' . $this->username . '&limit=10&format=json';
@@ -130,7 +130,7 @@ class LastfmController extends BaseController {
 	 * @return	mixed
 	 */
 	public function generateImage ( $url , $error = false ) {
-		$name = $this->username . '_' . $this->number . '_' . md5( time () ) . '.png';
+		$name = $this->username . '_' . $this->number . '_' . md5 ( time () ) . '.png';
 		
 		if ( $error ) {
 			Log::error ( 'There was an error, generate the error image' );
@@ -153,21 +153,21 @@ class LastfmController extends BaseController {
 		}
 		
 		// Expand image up 36px with the background color with white
-		$image->resizeCanvas ( 0 , 36 , 'bottom' , true , '#fff' );
+		$image->resizeCanvas ( 0 , 36 , 'bottom' , true , $this->text['colours']['white'] );
 		
 		// Larger rectangle that forms the border
-		$image->rectangle ( 'rgb(204,204,204)' , 0 , 0 , 299 , 24 , false );
+		$image->rectangle ( $this->text['colours']['border'] , 0 , 0 , 299 , 24 , false );
 		
 		// Smaller rectangle with the background
-		$image->rectangle ( 'rgb(245,245,245)' , 1 , 1 , 298 , 23 );
+		$image->rectangle ( $this->text['colours']['background'] , 1 , 1 , 298 , 23 );
 		
 		if ( $error ) {
-			$image->text ( 'Error: ' . $error , 5 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
+			$image->text ( 'Error: ' . $error , 7 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
 		} else {
 			$x = 0;
 			
 			// 1. or 2. (etc)
-			$image->text ( $this->number . '.' , $x += 5 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
+			$image->text ( $this->number . '.' , $x += 7 , 17 , $this->text['size'] , $this->text['colours']['black'] , 0 , $this->text['fonts']['bold'] );
 			
 			$bbox = imagettfbbox ( $this->text['size'] , 0 , $this->text['fonts']['bold'] , $this->number . '.' );
 			// Artist Name
