@@ -127,15 +127,17 @@ class LastfmController extends BaseController {
 		
 		$image	= $this->generateImage ( $this->imageUrl , $forceError );
 		
-		$size	= filesize ( $this->filename );
+		$responseImage = ( gettype ( $image ) == 'resource' ) ? $image->encoded : $image;
+		
+		$size	= strlen ( $responseImage );
 		
 		$headers = [
-			'Content-Type'		=> $image->mime ,
+			'Content-Type'		=> 'image/png' ,
 			'Content-Length'	=> $size ,
 			'X-Powered-By'		=> 'yesdevnull.net/lastfm Last.fm Album Image Generator' ,
 		];
 		
-		$response	= Response::make ( $image->encoded , 200 , $headers );
+		$response	= Response::make ( $responseImage , 200 , $headers );
 		
 		$filetime	= filemtime ( $this->filename );
 		$etag		= md5 ( $filetime );
@@ -181,8 +183,7 @@ class LastfmController extends BaseController {
 			
 			$image = Image::open ( $this->filename );
 			
-			//return $image->encode ( $this->filename , 90 );
-			return $image->response ();
+			return $image->encode ( $this->filename , 90 );
 		}
 		
 		if ( $error ) {
