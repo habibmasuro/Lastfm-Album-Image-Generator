@@ -1,15 +1,5 @@
 <?php
 
-class LastfmException extends Exception {}
-
-App::error( function ( LastfmException $e , $errorCode , $fromConsole ) {
-	if ( $fromConsole ) {
-		return 'Error (' . $errorCode . '): ' . $e->getMessage() . "\n";
-	}
-	
-	return '<h1>Error: ' . $e->getMessage() . '</h1>';
-} );
-
 class LastfmController extends BaseController {
 	
 	/**
