@@ -1,9 +1,17 @@
 {
-	"name": "laravel/laravel",
-	"description": "The Laravel Framework.",
-	"keywords": ["framework", "laravel"],
+	"name": "yesdevnull/lastfm",
+	"description": "Last.fm Album Image Generator",
+	"keywords": ["yesdevnull", "lastfm"],
+	"authors": [
+		{
+			"name": "Dan Barrett",
+			"homepage": "http://yesdevnull.net",
+			"role": "developer"
+		}
+	],
 	"license": "MIT",
 	"require": {
+		"php": ">=5.4.0",
 		"laravel/framework": "4.1.*",
 		"intervention/image": "dev-master",
 		"nesbot/carbon": "*",
