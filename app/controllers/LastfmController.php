@@ -69,7 +69,7 @@ class LastfmController extends BaseController {
 	 *
 	 * @return void
 	 */
-	public function leader ( ) {
+	public function leader () {
 		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
 		
 		// I use this for error testing...
@@ -92,7 +92,7 @@ class LastfmController extends BaseController {
 			$this->number	= $result['num'];
 			$this->type		= $result['type'];
 		} else {
-			var_dump ( $validator->messages () );
+			throw new \Exception ( 'Sorry, you failed.' );
 		}
 		
 		$client = new GuzzleHttp\Client( [
@@ -125,21 +125,22 @@ class LastfmController extends BaseController {
 			return Redirect::away ( $this->result['url'] , 301 );
 		}
 		
-		$image = $this->generateImage ( $this->imageUrl , $forceError );
+		$image	= $this->generateImage ( $this->imageUrl , $forceError );
 		
-		$size = filesize ( $this->filename );
+		$size	= filesize ( $this->filename );
 		
 		$headers = [
 			'Content-Type'		=> $image->mime ,
 			'Content-Length'	=> $size ,
+			'X-Powered-By'		=> 'yesdevnull.net/lastfm Last.fm Album Image Generator' ,
 		];
 		
-		$response = Response::make ( $image->encoded , 200 , $headers );
+		$response	= Response::make ( $image->encoded , 200 , $headers );
 		
-		$filetime = filemtime ( $this->filename );
-		$etag = md5 ( $filetime );
-		$time = Carbon::createFromTimeStamp ($filetime)->toRFC2822String ();
-		$expires = Carbon::createFromTimeStamp ($filetime)->addWeeks (1)->toRFC2822String ();
+		$filetime	= filemtime ( $this->filename );
+		$etag		= md5 ( $filetime );
+		$time		= Carbon::createFromTimeStamp ($filetime)->toRFC2822String ();
+		$expires	= Carbon::createFromTimeStamp ($filetime)->addWeeks (1)->toRFC2822String ();
 		
 		$response->setEtag ( $etag );
 		$response->setLastModified ( new DateTime ( $time ) );
@@ -157,6 +158,7 @@ class LastfmController extends BaseController {
 	 * @return	array
 	 */
 	public function getApiResult ( $results , $number ) {
+		// Minus 1 because the results array 
 		$result = $results['albums']['album'][$number - 1];
 		
 		$this->imageUrl = $result['image'][3]['#text'];
@@ -175,6 +177,7 @@ class LastfmController extends BaseController {
 		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . md5 ( time () ) . '.png';
 		
 		if ( $error ) {
+			// Normally, you'd only come down this path if the function was called by 
 			Log::error ( 'There was an error, generate the error image' );
 			
 			// We had an error, we're a sad panda
@@ -232,7 +235,7 @@ class LastfmController extends BaseController {
 		// Save the image as a .png with a quality of 90
 		$image->save ( $this->filename , 90 );
 		
-		// I don't want to optimise the error messages
+		// I don't want to optimise the error message images
 		if ( !$error ) {
 			Log::info ( 'Finished generating image non-optimised image' );
 			
