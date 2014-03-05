@@ -92,7 +92,7 @@ class LastfmController extends BaseController {
 			$this->number	= $result['num'];
 			$this->type		= $result['type'];
 		} else {
-			throw new \Exception ( 'Sorry, you failed.' );
+			return Redirect::to ( '/generator' );
 		}
 		
 		$client = new GuzzleHttp\Client( [
@@ -310,7 +310,7 @@ class LastfmController extends BaseController {
 		if ( $validator->passes () ) {
 			$this->username	= $result['user'];
 		} else {
-			return Redirect::to ( '/generator' )->withErrors ( $validator );
+			return Redirect::to ( '/generator' )->withInput ()->withErrors ( $validator );
 		}
 		
 		$string = '';
