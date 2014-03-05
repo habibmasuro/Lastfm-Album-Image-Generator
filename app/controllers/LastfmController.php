@@ -119,10 +119,10 @@ class LastfmController extends BaseController {
 		$this->result = $this->getApiResult ( $response->json () , $this->number );
 		
 		if ( $this->type == 'link' ) {
-			Log::info ( 'Sending user away to Last.fm' , [ 'url' => $this->result['url'] , 'code' => 301 , 'user' => $this->username , 'number' => $this->number ] );
+			Log::info ( 'Sending user away to Last.fm' , [ 'url' => $this->result['url'] , 'code' => 307 , 'user' => $this->username , 'number' => $this->number ] );
 			
 			// Redirect time, send them to Last.fm
-			return Redirect::away ( $this->result['url'] , 301 );
+			return Redirect::away ( $this->result['url'] , 307 );
 		}
 		
 		$image	= $this->generateImage ( $this->imageUrl , $forceError );
@@ -301,7 +301,7 @@ class LastfmController extends BaseController {
 		$rules = [
 			'user'	=> [
 				'required' ,
-				'regex:/^([a-z0-9_-]){1,30}$/i' ,
+				'regex:/^([a-z0-9_-]){2,15}$/i' ,
 			] ,
 		];
 		
@@ -310,7 +310,7 @@ class LastfmController extends BaseController {
 		if ( $validator->passes () ) {
 			$this->username	= $result['user'];
 		} else {
-			throw new \Exception ( 'Sorry, you failed.' );
+			return Redirect::to ( '/generator' )->withErrors ( $validator );
 		}
 		
 		$string = '';
