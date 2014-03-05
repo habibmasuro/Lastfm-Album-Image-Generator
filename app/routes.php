@@ -11,4 +11,14 @@
 |
 */
 
-Route::get('/', 'LastfmController@leader' );
+// This handles the image generation
+Route::get ( '/' , 'LastfmController@leader' );
+
+// We're now handling any BBCode generation forms
+Route::get ( '/generator' , function () {
+	return View::make ( 'form' );
+} );
+
+Route::group ( [ 'before' => 'csrf' ] , function () {
+	Route::post ( '/generator' , 'LastfmController@formProcessor' );
+} );

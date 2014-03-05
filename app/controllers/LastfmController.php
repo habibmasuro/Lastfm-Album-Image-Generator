@@ -288,4 +288,35 @@ class LastfmController extends BaseController {
 		// Remove job from queue
 		$job->delete ();
 	}
+	
+	public function formProcessor () {
+		// Kiss me
+		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
+		
+		// The validation rules
+		$rules = [
+			'user'	=> [
+				'required' ,
+				'regex:/^([a-z0-9_-]){1,30}$/i' ,
+			] ,
+		];
+		
+		$validator = Validator::make ( $result , $rules );
+		
+		if ( $validator->passes () ) {
+			$this->username	= $result['user'];
+		} else {
+			throw new \Exception ( 'Sorry, you failed.' );
+		}
+		
+		$string = '';
+		
+		for ( $i = 1 ; $i <= 10 ; $i++ ) {
+			$newLine = ( $i < 10 ) ? "\n\n" : '';
+			
+			$string .= '[url=' . URL::action ( 'LastfmController@leader' , [ 'user' => 'yesdevnull' , 'num' => $i , 'type' => 'link' ] ) . '][img]' . URL::action ( 'LastfmController@leader' , [ 'user' => 'yesdevnull' , 'num' => $i ] ) . '[/img][/url]' . $newLine;
+		}
+		echo '<pre>';
+		dd ( $string );
+	}
 }
