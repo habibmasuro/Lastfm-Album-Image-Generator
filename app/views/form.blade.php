@@ -52,7 +52,7 @@
 
 	@if ( isset ( $dataString ) )
 		<div class="col-sm-offset-2 col-sm-10">
-			<pre>{{{ $dataString }}}</pre>
+			<pre id="generated-code">{{{ $dataString }}}</pre>
 		</div>
 	@endif
 
