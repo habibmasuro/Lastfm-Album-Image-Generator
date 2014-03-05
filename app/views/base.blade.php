@@ -31,7 +31,7 @@
 			<div class="jumbotron text-center">
 				<h1>Last.fm Album Image Generator</h1>
 				
-				<p>Brought to you by <strong>Dan Barrett</strong>.  Check out <a href="http://yesdevnull.net/lastfm" class="btn btn-danger">yesdevnull.net/lastfm</a> for more details.</p>
+				<p>Brought to you by <strong>Dan Barrett</strong>.  Check out <a href="http://yesdevnull.net/lfm" class="btn btn-danger">yesdevnull.net/lfm</a> for more details.</p>
 			</div>
 			
 			@yield( 'body' )

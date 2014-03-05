@@ -2,6 +2,16 @@
 
 @section( 'body' )
 
+<div class="row">
+
+	<div class="col-sm-12 text-center">
+	
+		<div class="alert alert-info">Enter your Last.fm username below to generate the BBCode required for your Last.fm profile page.</div>
+	
+	</div>
+
+</div>
+
 @if ( $errors->first ( 'num' ) || $errors->first ( 'type' ) )
 <div class="row">
 
@@ -22,9 +32,9 @@
 	
 	<div class="form-group {{ $errors->first ( 'user' , 'has-error has-feedback' ) }}">
 	
-		{{ Form::label ( 'username' , 'Username' , [ 'class' => 'col-sm-2 control-label' ] ) }}
+		{{ Form::label ( 'username' , 'Username' , [ 'class' => 'col-sm-1 control-label' ] ) }}
 			
-		<div class="col-sm-10">
+		<div class="col-sm-11">
 		
 			{{ Form::text ( 'user' , Input::get ( 'user' ) , [ 'id' => 'username' , 'class' => 'form-control' ] ) }}
 			
@@ -40,7 +50,7 @@
 	
 	<div class="form-group">
 	
-		<div class="col-sm-offset-2 col-sm-10">
+		<div class="col-sm-offset-1 col-sm-11">
 	
 			<label>{{ Form::submit ( 'Generate!' , [ 'class' => 'btn btn-primary btn-lg' ] ) }}</label>
 		
@@ -51,7 +61,7 @@
 {{ Form::close () }}
 
 	@if ( isset ( $dataString ) )
-		<div class="col-sm-offset-2 col-sm-10">
+		<div class="col-sm-12">
 			<pre id="generated-code">{{{ $dataString }}}</pre>
 		</div>
 	@endif
