@@ -144,6 +144,11 @@ class LastfmController extends BaseController {
 		
 		$image	= $this->generateImage ( $this->imageUrl , $forceError );
 		
+		/**
+		 * Browser Caching from: http://laravelsnippets.com/snippets/display-php-loaded-image-with-browser-cache-support
+		 * Thanks, Philo!
+		 */
+		
 		$responseImage = ( gettype ( $image ) == 'resource' ) ? $image->encoded : $image;
 		
 		$size	= strlen ( $responseImage );
