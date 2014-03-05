@@ -53,6 +53,12 @@ class LastfmTest extends TestCase {
 		$this->assertResponseOK ();
 	}
 	
+	public function testPostGeneratorUsernameFirstLetterAlpha () {
+		$this->call ( 'POST' , '/generator' , [ 'user' => '2yesdevnull' ] );
+		
+		$this->assertSessionHas ( 'errors' );
+	}
+	
 	public function testPostGeneratorUsernameFailsSpecialChars () {
 		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull+' ] );
 		
