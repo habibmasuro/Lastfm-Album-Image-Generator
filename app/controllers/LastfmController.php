@@ -266,8 +266,8 @@ class LastfmController extends BaseController {
 		if ( !$error ) {
 			Log::info ( 'Finished generating image non-optimised image' );
 			
-			if ( Cache::add ( $this->filename , true , Carbon::now ()->addWeeks(1) ) ) {
-				Log::info ( 'Added item to cache, will go stale in ' . Carbon::now ()->addWeeks(1)->diffForHumans () );	
+			if ( Cache::forever ( $this->filename , true ) ) {
+				Log::info ( 'Added item to cache' );	
 			}
 			
 			// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
