@@ -2,25 +2,45 @@
 
 class LastfmTest extends TestCase {
 
-	/**
-	 * A basic functional test example.
-	 *
-	 * @return void
-	 */
-	public function testAccessGenerator () {
+	private $testVars = [
+		'user' => 'yesdevnull' ,
+		'num' => 1
+	];
+	
+	public function testHomeNoVarsRedirectsToGenerator () {
+		$this->call ( 'GET' , '/' );
+		
+		$this->assertRedirectedTo ( '/generator' );
+		
+		$this->assertSessionHas ( 'errors' );
+	}
+	
+	public function testHomeUsernameAcceptsOnlyAlphaNum () {		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertResponseOK();
+	}
+	
+	public function testGetGenerator () {
 		$this->call ( 'GET' , '/generator' );
 
 		$this->assertResponseOK ();
 	}
 	
-	public function testPostGeneratorUsernameIsset () {
+	public function testPostGeneratorAllOK () {
+		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull'] );
+		
+		$this->assertViewHas ( 'dataString' );
+	}
+	
+	public function testPostGeneratorUsernameFailsNoUsername () {
 		$this->call ( 'POST' , '/generator' );
 		
 		$this->assertSessionHas ( 'errors' );
 	}
 	
 	public function testPostGeneratorUsernameAcceptsOnlyAlphaNum () {
-		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull' ] );
+		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull27' ] );
 		
 		$this->assertResponseOK ();
 	}

@@ -1,8 +1,12 @@
 <?php
+
 $data = '';
- if ( isset ( $dataString ) ) {
-$data = $dataString;
-} ?>
+
+if ( isset ( $dataString ) ) {
+	$data = $dataString;
+}
+
+?>
 
 {{ Form::open ( [ 'action' => 'LastfmController@formProcessor' ] ) }}
 
