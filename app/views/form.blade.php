@@ -6,7 +6,7 @@
 
 	<div class="col-sm-12 text-center">
 	
-		<div class="alert alert-info">Enter your Last.fm username below to generate the BBCode required for your Last.fm profile page.</div>
+		<div class="alert alert-info"><span class="glyphicon glyphicon-info-sign"></span> Enter your Last.fm username below to generate the BBCode required for your Last.fm profile page.</div>
 	
 	</div>
 
@@ -15,11 +15,11 @@
 @if ( $errors->first ( 'num' ) || $errors->first ( 'type' ) )
 <div class="row">
 
-	<div class="col-sm-12">
+	<div class="col-sm-12 text-center">
 
-		{{ $errors->first ( 'num' , '<div class="alert alert-danger"><strong>Error:</strong> :message</div>' ) }}
+		{{ $errors->first ( 'num' , '<div class="alert alert-danger"><span class="glyphicon glyphicon-remove-sign"></span> <strong>Error:</strong> :message</div>' ) }}
 		
-		{{ $errors->first ( 'type' , '<div class="alert alert-danger"><strong>Error:</strong> :message</div>' ) }}
+		{{ $errors->first ( 'type' , '<div class="alert alert-danger"><span class="glyphicon glyphicon-remove-sign"></span> <strong>Error:</strong> :message</div>' ) }}
 	
 	</div>
 
@@ -39,7 +39,7 @@
 			{{ Form::text ( 'user' , Input::get ( 'user' ) , [ 'id' => 'username' , 'class' => 'form-control' ] ) }}
 			
 			@if ( $usernameErrors )
-				<span class="glyphicon glyphicon-remove form-control-feedback"></span>
+				<span class="glyphicon glyphicon-remove-sign form-control-feedback"></span>
 				
 				{{ $errors->first ( 'user' , '<span class="help-block">:message</span>' ) }}
 			@endif
