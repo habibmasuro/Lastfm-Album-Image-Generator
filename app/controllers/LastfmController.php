@@ -70,6 +70,10 @@ class LastfmController extends BaseController {
 	 * @return void
 	 */
 	public function leader () {
+		if ( count ( Input::all () ) == 0 ) {
+			return Redirect::to ( '/generator' );
+		}
+		
 		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
 		
 		// I use this for error testing...
@@ -88,10 +92,14 @@ class LastfmController extends BaseController {
 		];
 		
 		$messages = [
-			'user.required' => 'Your Last.fm username is required' ,
-			'user.regex'	=> 'Your Last.fm username contains invalid characters' ,
-			'user.min'		=> 'Your Last.fm username is too short' ,
-			'user.max'		=> 'Your Last.fm username is too long' ,
+			'user.required' => 'Your Last.fm <code>user</code>name is required' ,
+			'user.regex'	=> 'Your Last.fm <code>user</code>name contains invalid characters' ,
+			'user.min'		=> 'Your Last.fm <code>user</code>name is too short' ,
+			'user.max'		=> 'Your Last.fm <code>user</code>name is too long' ,
+			'num.required'	=> 'You must supply an album number' ,
+			'num.integer'	=> 'The var number must be a number' ,
+			'num.min'		=> 'The number is too short' ,
+			'type.in'		=> 'The <code>type</code> should be link, otherwise don\'t supply it' ,
 		];
 		
 		$validator = Validator::make ( $result , $rules , $messages );
@@ -259,7 +267,7 @@ class LastfmController extends BaseController {
 			Log::info ( 'Finished generating image non-optimised image' );
 			
 			if ( Cache::add ( $this->filename , true , Carbon::now ()->addWeeks(1) ) ) {
-				Log::info ( 'Added item to cache' );	
+				Log::info ( 'Added item to cache, will go stale in ' . Carbon::now ()->addWeeks(1)->diffForHumans () );	
 			}
 			
 			// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
