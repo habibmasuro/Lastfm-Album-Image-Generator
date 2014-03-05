@@ -1,4 +1,10 @@
+@extends( 'base' )
+
+@section( 'body' )
+
 <?php
+
+//dd($errors->isEmpty());
 
 $data = '';
 
@@ -8,24 +14,54 @@ if ( isset ( $dataString ) ) {
 
 ?>
 
-{{ Form::open ( [ 'action' => 'LastfmController@formProcessor' ] ) }}
+{{ Form::open ( [ 'action' => 'LastfmController@formProcessor' , 'role' => 'form' , 'class' => 'form-horizontal' ] ) }}
 
-	<ul class="errors">
+	<?php $usernameErrors = ( $errors->has ( 'user' ) ) ? true : false; ?>
 	
-		@foreach ( $errors->all () as $message )
+	<div class="form-group {{ $errors->first ( 'user' , 'has-error has-feedback' ) }}">
+	
+		{{ Form::label ( 'username' , 'Username' , [ 'class' => 'col-sm-2 control-label' ] ) }}
+			
+		<div class="col-sm-10">
 		
-			<li>{{ $message }}</li>
+			{{ Form::text ( 'user' , Input::get ( 'user' ) , [ 'id' => 'username' , 'class' => 'form-control' ] ) }}
+			
+			@if ( $usernameErrors )
+				<span class="glyphicon glyphicon-remove form-control-feedback"></span>
+				
+				{{ $errors->first ( 'user' , '<span class="help-block">:message</span>' ) }}
+			@endif
 		
-		@endforeach
+		</div>
 	
-	</ul>
-
-	{{ Form::label ( 'username' , 'Username' ) }}
+	</div>
 	
-	{{ Form::text ( 'user' , Input::get ( 'user' ) , [ 'id' => 'username' ] ) }}
+	<div class="form-group">
 	
-	{{ Form::submit ( 'Generate!' ) }}
+		<div class="col-sm-offset-2 col-sm-10">
 	
-	{{ Form::textarea ( 'Code' , $data ) }}
+			<label>{{ Form::submit ( 'Generate!' , [ 'class' => 'btn btn-primary btn-lg' ] ) }}</label>
+		
+		</div>
+	
+	</div>
+	
+	<div class="form-group">
+	
+		{{ Form::label ( 'code' , 'Your Code' , [ 'class' => 'col-sm-2 control-label'] ) }}
+		
+		<div class="col-sm-10">
+	
+		{{ Form::textarea ( 'code' , $data , [ 'class' => 'form-control' ] ) }}
+		
+		</div>
+	
+	</div>
 
 {{ Form::close () }}
+
+	@if ( isset ( $dataString ) )
+		<pre>{{{ $dataString }}}</pre>
+	@endif
+
+@stop
