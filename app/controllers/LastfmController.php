@@ -79,20 +79,29 @@ class LastfmController extends BaseController {
 		$rules = [
 			'user'	=> [
 				'required' ,
-				'regex:/^([a-z0-9_-]){1,30}$/i' ,
+				'regex:/^[a-z]([a-z0-9_-]){2,14}$/i' ,
+				'min:2' ,
+				'max:15' ,
 			] ,
 			'num'	=> 'required|integer|between:1,10' ,
 			'type'	=> 'in:,link' ,
 		];
 		
-		$validator = Validator::make ( $result , $rules );
+		$messages = [
+			'user.required' => 'Your Last.fm username is required' ,
+			'user.regex'	=> 'Your Last.fm username contains invalid characters' ,
+			'user.min'		=> 'Your Last.fm username is too short' ,
+			'user.max'		=> 'Your Last.fm username is too long' ,
+		];
+		
+		$validator = Validator::make ( $result , $rules , $messages );
 		
 		if ( $validator->passes () ) {
 			$this->username	= $result['user'];
 			$this->number	= $result['num'];
 			$this->type		= $result['type'];
 		} else {
-			return Redirect::to ( '/generator' );
+			return Redirect::to ( '/generator' )->withErrors ( $validator );
 		}
 		
 		$client = new GuzzleHttp\Client( [
@@ -243,13 +252,13 @@ class LastfmController extends BaseController {
 		}
 		
 		// Save the image as a .png with a quality of 90
-		$image->save ( $this->filename , 90 );
+		$image->save ( $this->filename );
 		
 		// I don't want to optimise the error message images
 		if ( !$error ) {
 			Log::info ( 'Finished generating image non-optimised image' );
 			
-			if ( Cache::add ( $this->filename , true , Carbon::now ()->addWeeks(1)->format ( 's' ) ) ) {
+			if ( Cache::add ( $this->filename , true , Carbon::now ()->addWeeks(1) ) ) {
 				Log::info ( 'Added item to cache' );	
 			}
 			
@@ -301,11 +310,18 @@ class LastfmController extends BaseController {
 		$rules = [
 			'user'	=> [
 				'required' ,
-				'regex:/^([a-z0-9_-]){2,15}$/i' ,
+				'regex:/^[a-z]([a-z0-9_-]){1,14}$/i' ,
 			] ,
 		];
 		
-		$validator = Validator::make ( $result , $rules );
+		$messages = [
+			'user.required' => 'Your Last.fm username is required' ,
+			'user.regex'	=> 'Your Last.fm username contains invalid characters' ,
+			'user.min'		=> 'Your Last.fm username is too short' ,
+			'user.max'		=> 'Your Last.fm username is too long' ,
+		];
+		
+		$validator = Validator::make ( $result , $rules , $messages );
 		
 		if ( $validator->passes () ) {
 			$this->username	= $result['user'];
