@@ -2,17 +2,19 @@
 
 @section( 'body' )
 
-<?php
+@if ( $errors->first ( 'num' ) || $errors->first ( 'type' ) )
+<div class="row">
 
-//dd($errors->isEmpty());
+	<div class="col-sm-12">
 
-$data = '';
+		{{ $errors->first ( 'num' , '<div class="alert alert-danger"><strong>Error:</strong> :message</div>' ) }}
+		
+		{{ $errors->first ( 'type' , '<div class="alert alert-danger"><strong>Error:</strong> :message</div>' ) }}
+	
+	</div>
 
-if ( isset ( $dataString ) ) {
-	$data = $dataString;
-}
-
-?>
+</div>
+@endif
 
 {{ Form::open ( [ 'action' => 'LastfmController@formProcessor' , 'role' => 'form' , 'class' => 'form-horizontal' ] ) }}
 
@@ -45,23 +47,13 @@ if ( isset ( $dataString ) ) {
 		</div>
 	
 	</div>
-	
-	<div class="form-group">
-	
-		{{ Form::label ( 'code' , 'Your Code' , [ 'class' => 'col-sm-2 control-label'] ) }}
-		
-		<div class="col-sm-10">
-	
-		{{ Form::textarea ( 'code' , $data , [ 'class' => 'form-control' ] ) }}
-		
-		</div>
-	
-	</div>
 
 {{ Form::close () }}
 
 	@if ( isset ( $dataString ) )
-		<pre>{{{ $dataString }}}</pre>
+		<div class="col-sm-offset-2 col-sm-10">
+			<pre>{{{ $dataString }}}</pre>
+		</div>
 	@endif
 
 @stop

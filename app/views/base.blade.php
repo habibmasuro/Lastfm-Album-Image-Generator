@@ -9,6 +9,12 @@
 		<!-- Bootstrap -->
 		<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
 		
+		<style>
+		.container {
+			margin-top: 40px;
+		}
+		</style>
+		
 		<!-- <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet"> -->
 		
 		<!-- <link href="cover.css" rel="stylesheet"> -->
@@ -22,7 +28,19 @@
 	</head>
 	<body>
 		<div class="container">
+			<div class="jumbotron text-center">
+				<h1>Last.fm Album Image Generator</h1>
+				
+				<p>Brought to you by <strong>Dan Barrett</strong>.  Check out <a href="http://yesdevnull.net/lastfm" class="btn btn-danger">yesdevnull.net/lastfm</a> for more details.</p>
+			</div>
+			
 			@yield( 'body' )
+			
+			<div class="row">
+				<div class="col-sm-12">
+					<p class="text-center"><em><small>&copy; {{ date ( 'Y' ) }} Dan Barrett.  This service is not official, nor endorsed by <span class="btn btn-danger btn-xs">Last.fm Ltd</span></small></em></p>
+				</div>
+			</div>
 		</div>
 		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
