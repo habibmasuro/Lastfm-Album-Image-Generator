@@ -289,9 +289,13 @@ class LastfmController extends BaseController {
 		$job->delete ();
 	}
 	
+	/**
+	 * Process the form request
+	 *
+	 * @return void
+	 */
 	public function formProcessor () {
-		// Kiss me
-		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
+		$result = Input::only ( [ 'user' ] );
 		
 		// The validation rules
 		$rules = [
@@ -314,9 +318,9 @@ class LastfmController extends BaseController {
 		for ( $i = 1 ; $i <= 10 ; $i++ ) {
 			$newLine = ( $i < 10 ) ? "\n\n" : '';
 			
-			$string .= '[url=' . URL::action ( 'LastfmController@leader' , [ 'user' => 'yesdevnull' , 'num' => $i , 'type' => 'link' ] ) . '][img]' . URL::action ( 'LastfmController@leader' , [ 'user' => 'yesdevnull' , 'num' => $i ] ) . '[/img][/url]' . $newLine;
+			$string .= '[url=' . URL::action ( 'LastfmController@leader' , [ 'user' => $this->username , 'num' => $i , 'type' => 'link' ] ) . '][img]' . URL::action ( 'LastfmController@leader' , [ 'user' => $this->username , 'num' => $i ] ) . '[/img][/url]' . $newLine;
 		}
-		echo '<pre>';
-		dd ( $string );
+		
+		return View::make ( 'form' )->with ( 'dataString' , $string );
 	}
 }
