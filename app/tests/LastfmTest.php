@@ -9,13 +9,16 @@ class LastfmTest extends TestCase {
 	 */
 	private $testVars = [
 		'user' => 'yesdevnull' ,
-		'num' => 1
+		'num' => 1 ,
+		'type' => '' ,
 	];
 	
 	public function testHomeNoVarsRedirectsToGenerator () {
 		$this->call ( 'GET' , '/' );
 		
 		$this->assertRedirectedTo ( '/generator' );
+		// Make sure the Error MessageBag is empty
+		$this->assertSessionHas ( 'errors' , '' );
 	}
 	
 	/**
@@ -28,6 +31,114 @@ class LastfmTest extends TestCase {
 		$this->assertResponseOK();
 	}
 	*/
+	
+	public function testHomeUsernameFailsFirstLetterAlpha () {
+		$this->testVars['user'] = '2yesdevnull';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors' ] );
+		$this->assertSessionHasErrors ( 'user' );
+	}
+	
+	public function testHomeUsernameFailsDoesNotExist () {
+		$this->testVars['user'] = '';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors' ] );
+		$this->assertSessionHasErrors ( 'user' );
+	}
+	
+	public function testHomeUsernameFailsSpecialChars () {
+		$this->testVars['user'] = 'yesdevnull+';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors' ] );
+		$this->assertSessionHasErrors ( 'user' );
+	}
+	
+	public function testHomeUsernameFailsTooLong () {
+		$this->testVars['user'] = 'LorumIpsumDolorSitAmet';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'user' );
+	}
+	
+	public function testHomeUsernameFailsTooShort () {
+		$this->testVars['user'] = 'D';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'user' );
+	}
+	
+	public function testHomeNumberFailsSpecialChars () {
+		$this->testVars['num'] = '1!';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeNumberFailsAlphaChars () {
+		$this->testVars['num'] = 'D';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeNumberFailsDoesNotExist () {
+		$this->testVars['num'] = '';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeNumberFailsTooLowOutOfBounds () {
+		$this->testVars['num'] = 0;
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeNumberFailsTooHighOutOfBounds () {
+		$this->testVars['num'] = 13;
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeNumberFailsNegativeNumber () {
+		$this->testVars['num'] = -13;
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors'] );
+		$this->assertSessionHasErrors ( 'num' );
+	}
+	
+	public function testHomeTypeFailsNotValidVar () {
+		$this->testVars['type'] = 'doggy';
+		
+		$this->call ( 'GET' , '/' , $this->testVars );
+		
+		$this->assertRedirectedTo ( '/generator' , [ 'errors' ] );
+		$this->assertSessionHasErrors ( 'type' );
+	}
 	
 	public function testGetGenerator () {
 		$this->call ( 'GET' , '/generator' );
@@ -44,36 +155,38 @@ class LastfmTest extends TestCase {
 	public function testPostGeneratorUsernameFailsNoUsername () {
 		$this->call ( 'POST' , '/generator' );
 		
-		$this->assertSessionHas ( 'errors' );
+		$this->assertSessionHasErrors ( 'user' );
 	}
 	
 	public function testPostGeneratorUsernameAcceptsOnlyAlphaNum () {
-		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull27' ] );
+		$crawler = $this->client->request ( 'POST' , '/generator' , [ 'user' => 'yesdevnull27' ] );
 		
-		$this->assertResponseOK ();
+		$this->assertTrue ( $this->client->getResponse ()->isOk () );
+		
+		$this->assertCount ( 1 , $crawler->filter ( '#generated-code' ) );
 	}
 	
 	public function testPostGeneratorUsernameFirstLetterAlpha () {
 		$this->call ( 'POST' , '/generator' , [ 'user' => '2yesdevnull' ] );
 		
-		$this->assertSessionHas ( 'errors' );
+		$this->assertSessionHasErrors ( 'user' );
 	}
 	
 	public function testPostGeneratorUsernameFailsSpecialChars () {
 		$this->call ( 'POST' , '/generator' , [ 'user' => 'yesdevnull+' ] );
 		
-		$this->assertSessionHas ( 'errors' );
+		$this->assertSessionHasErrors ( 'user' );
 	}
 	
 	public function testPostGeneratorUsernameFailsTooLong () {
 		$this->call ( 'POST' , '/generator' , [ 'user' => 'LorumIpsumDolorSitAmet'] );
 		
-		$this->assertSessionHas ( 'errors' );
+		$this->assertSessionHasErrors ( 'user' );
 	}
 	
 	public function testPostGeneratorUsernameFailsTooShort () {
 		$this->call ( 'POST' , '/generator' , [ 'user' => 'D' ] );
 		
-		$this->assertSessionHas ( 'errors' );
+		$this->assertSessionHasErrors ( 'user' );
 	}
 }
