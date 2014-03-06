@@ -38,7 +38,7 @@
 			
 			<div class="row">
 				<div class="col-sm-12">
-					<p class="text-center"><em><small>&copy; {{ date ( 'Y' ) }} Dan Barrett.  This service is not official, nor endorsed by <span class="btn btn-danger btn-xs">Last.fm Ltd</span></small></em></p>
+					<p class="text-center"><em><small>&copy; {{ date ( 'Y' ) }} Dan Barrett.  This service is not official, nor endorsed by <a href="http://www.last.fm" class="btn btn-danger btn-xs">Last.fm Ltd</a></small></em></p>
 				</div>
 			</div>
 		</div>

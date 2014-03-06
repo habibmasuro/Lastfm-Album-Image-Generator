@@ -1,6 +1,8 @@
 # Last.fm Top 10 Album Image Generator
 By Dan Barrett - [yesdevnull.net/lfm](http://yesdevnull.net/lfm)
 
+Easily get images for a top 10 list for your Last.fm profile.
+
 ## What It Is?
 I'm using this on my website to generate [Last.fm](http://www.last.fm) album artwork - you can see it on [my profile here](http://last.fm/user/yesdevnull).
 
