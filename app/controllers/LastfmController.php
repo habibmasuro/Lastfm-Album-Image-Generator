@@ -148,6 +148,8 @@ class LastfmController extends BaseController {
 		 * Browser Caching from: http://laravelsnippets.com/snippets/display-php-loaded-image-with-browser-cache-support
 		 * Thanks, Philo!
 		 */
+		 
+		$request = Request::instance ();
 		
 		$responseImage = ( gettype ( $image ) == 'resource' ) ? $image->encoded : $image;
 		
@@ -171,7 +173,16 @@ class LastfmController extends BaseController {
 		$response->setExpires ( new DateTime ( $expires ) );
 		$response->setPublic ();
 		
-		return $response;
+		if ( $response->isNotModified ( $request ) ) {
+			Log::info ( 'Request is not modified, send empty response' , [ 'filesize' => $size ] );
+			return $response;
+		} else {
+			Log::info ( 'Request is modified, send new response' , [ 'filesize' => $size ] );
+			
+			$response->prepare ( $request );
+			
+			return $response;
+		}
 	}
 	
 	/**
@@ -201,11 +212,13 @@ class LastfmController extends BaseController {
 		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
 		
 		if ( Cache::has ( $this->filename ) ) {
-			Log::info ( 'Loaded cached object' );
-			
-			$image = Image::open ( $this->filename );
-			
-			return $image->encode ( $this->filename , 90 );
+			if ( file_exists ( $this->filename ) ) {
+				Log::info ( 'Loaded cached object' );
+				
+				$image = Image::open ( $this->filename );
+				
+				return $image->encode ( $this->filename , 90 );
+			}
 		}
 		
 		if ( $error ) {
