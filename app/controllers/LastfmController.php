@@ -65,6 +65,13 @@ class LastfmController extends BaseController {
 	public $filename;
 	
 	/**
+	 * The filename of the generated image with no path
+	 *
+	 * @var string
+	 */
+	public $filenameSansPath;
+	
+	/**
 	 * Follow the leader...
 	 *
 	 * @return void
@@ -165,8 +172,8 @@ class LastfmController extends BaseController {
 		
 		$filetime	= filemtime ( $this->filename );
 		$etag		= md5 ( $filetime );
-		$time		= Carbon::createFromTimeStamp ($filetime)->toRFC2822String ();
-		$expires	= Carbon::createFromTimeStamp ($filetime)->addWeeks (1)->toRFC2822String ();
+		$time		= Carbon::createFromTimeStamp ( $filetime )->toRFC2822String ();
+		$expires	= Carbon::createFromTimeStamp ( $filetime )->addWeeks (1)->toRFC2822String ();
 		
 		$response->setEtag ( $etag );
 		$response->setLastModified ( new DateTime ( $time ) );
@@ -193,7 +200,7 @@ class LastfmController extends BaseController {
 	 * @return	array
 	 */
 	public function getApiResult ( $results , $number ) {
-		// Minus 1 because the results array 
+		// Minus 1 because the results array starts from 0, not 1
 		$result = $results['albums']['album'][$number - 1];
 		
 		$this->imageUrl = $result['image'][3]['#text'];
@@ -210,10 +217,11 @@ class LastfmController extends BaseController {
 	 */
 	public function generateImage ( $url , $error = false ) {
 		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
+		$this->fileNameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
 		
 		if ( Cache::has ( $this->filename ) ) {
 			if ( file_exists ( $this->filename ) ) {
-				Log::info ( 'Loaded cached object' );
+				Log::info ( 'Loaded cached object' , [ 'file' => $this->filenameSansPath ] );
 				
 				$image = Image::open ( $this->filename );
 				
@@ -222,7 +230,7 @@ class LastfmController extends BaseController {
 		}
 		
 		if ( $error ) {
-			// Normally, you'd only come down this path if the function was called by 
+			// Normally, you'd only come down this path if the function was called by something else forcing an error
 			Log::error ( 'There was an error, generate the error image' );
 			
 			// We had an error, we're a sad panda
@@ -285,7 +293,7 @@ class LastfmController extends BaseController {
 			Log::info ( 'Finished generating image non-optimised image' );
 			
 			if ( Cache::forever ( $this->filename , true ) ) {
-				Log::info ( 'Added item to cache' );	
+				Log::info ( 'Added ' . $this->filenameSansPath . ' to cache' );	
 			}
 			
 			// Get a random number of seconds between 10 and 99 for the queue - I don't really want to 
@@ -308,7 +316,7 @@ class LastfmController extends BaseController {
 	 * @return	void
 	 */
 	public function optimiseImage ( $job , $data ) {
-		Log::info ( 'Started Job ID #' . $job->getJobId () . ' - optimising image...' );
+		Log::info ( 'Started Job ID #' . $job->getJobId () . ' - optimising ' . $this->filenameSansPath );
 		
 		$start = Carbon::now ();
 		
@@ -318,7 +326,7 @@ class LastfmController extends BaseController {
 		// The difference of time in seconds between 
 		$diff = ( $start->diffInSeconds () == 1 ) ? $start->diffInSeconds () . ' second' : $start->diffInSeconds () . ' seconds';
 		
-		Log::info ( 'Finished Job ID #' . $job->getJobId () . ' - optimising image, took ' . $diff );
+		Log::info ( 'Finished Job ID #' . $job->getJobId () . ' - optimising ' . $this->filenameSansPath . ', took ' . $diff );
 		
 		// Remove job from queue
 		$job->delete ();
