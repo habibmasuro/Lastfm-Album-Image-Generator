@@ -17,8 +17,8 @@ class LastfmController extends BaseController {
 		] ,
 		'size' => 8 ,
 		'fonts' => [
-			'normal' => 'public/fonts/Arial.ttf' ,
-			'bold' => 'public/fonts/Arial-Bold.ttf' ,
+			'normal' => public_path () . '/fonts/Arial.ttf' ,
+			'bold' => public_path () . '/fonts/Arial-Bold.ttf' ,
 		] ,
 	];
 	
@@ -216,7 +216,7 @@ class LastfmController extends BaseController {
 	 * @return	mixed
 	 */
 	public function generateImage ( $url , $error = false ) {
-		$this->filename = 'public/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
+		$this->filename = public_path () . '/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
 		$this->fileNameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
 		
 		if ( Cache::has ( $this->filename ) ) {
@@ -234,7 +234,7 @@ class LastfmController extends BaseController {
 			Log::error ( 'There was an error, generate the error image' );
 			
 			// We had an error, we're a sad panda
-			$image = Image::make ( 'public/resources/sadpanda.png' );
+			$image = Image::make ( public_path () . '/resources/sadpanda.png' );
 		} else {
 			// Pull image from Last.fm and create the Image instance
 			try {
