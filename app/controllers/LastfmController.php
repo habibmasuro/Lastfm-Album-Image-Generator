@@ -16,10 +16,7 @@ class LastfmController extends BaseController {
 			'black' => '#000' ,
 		] ,
 		'size' => 8 ,
-		'fonts' => [
-			'normal' => public_path () . '/fonts/Arial.ttf' ,
-			'bold' => public_path () . '/fonts/Arial-Bold.ttf' ,
-		] ,
+		'fonts' => '' ,
 	];
 	
 	/**
@@ -80,6 +77,11 @@ class LastfmController extends BaseController {
 		if ( count ( Input::all () ) == 0 ) {
 			return Redirect::to ( '/generator' );
 		}
+		
+		$this->text['fonts'] = [
+			'normal' => public_path () . '/fonts/Arial.ttf' ,
+			'bold' => public_path () . '/fonts/Arial-Bold.ttf' ,
+		];
 		
 		$result = Input::only ( [ 'user' , 'num' , 'type' , 'error' ] );
 		
