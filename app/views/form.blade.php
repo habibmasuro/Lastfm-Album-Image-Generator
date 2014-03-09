@@ -12,7 +12,7 @@
 
 </div>
 
-@if ( $errors->first ( 'num' ) || $errors->first ( 'type' ) )
+@if ( $errors->first ('num') || $errors->first ('type') || $errors->first('token') )
 <div class="row">
 
 	<div class="col-sm-12 text-center">
@@ -20,6 +20,8 @@
 		{{ $errors->first ( 'num' , '<div class="alert alert-danger"><span class="glyphicon glyphicon-remove-sign"></span> <strong>Error:</strong> :message</div>' ) }}
 		
 		{{ $errors->first ( 'type' , '<div class="alert alert-danger"><span class="glyphicon glyphicon-remove-sign"></span> <strong>Error:</strong> :message</div>' ) }}
+		
+		{{ $errors->first ( 'token' , '<div class="alert alert-danger"><span class="glyphicon glyphicon-remove-sign"></span> <strong>Error:</strong> :message</div>' ) }}
 	
 	</div>
 
