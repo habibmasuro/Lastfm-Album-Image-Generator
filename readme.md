@@ -21,7 +21,7 @@ You can also get a link returned instead of an image so you can have a URL that 
 
 ## Generator
 
-![Last.fm Album Image Generator Page](http://yesdevnull.net/wp-content/uploads/2014/03/generator.jpg)
+![Last.fm Album Image Generator Page](http://lastfmalbumimagegenerator.com?user=yesdevnull&num=1)
 
 If you enter the address `/generator` you'll land on an HTML form where you can enter your Last.fm username and get the BBCode required for Last.fm's profile page.
 
