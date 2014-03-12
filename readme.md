@@ -15,13 +15,13 @@ By providing your Last.fm username and the album number in a query string you'll
 ?user=yourusername&num=1
 ```
 
-![Number 1 Album](http://yesdevnull.net/wp-content/uploads/2014/03/number-one.jpg)
+![Number 1 Album](http://lastfmalbumimagegenerator.com?user=yesdevnull&num=1)
 
 You can also get a link returned instead of an image so you can have a URL that will redirect users to the Last.fm album page.  To do this, add the variable `type` with the value `link` - or `&type=link`.
 
 ## Generator
 
-![Last.fm Album Image Generator Page](http://lastfmalbumimagegenerator.com?user=yesdevnull&num=1)
+![Last.fm Album Image Generator Page](http://yesdevnull.net/wp-content/uploads/2014/03/generator.jpg)
 
 If you enter the address `/generator` you'll land on an HTML form where you can enter your Last.fm username and get the BBCode required for Last.fm's profile page.
 
