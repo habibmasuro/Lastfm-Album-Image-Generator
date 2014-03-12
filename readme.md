@@ -1,4 +1,4 @@
-# Last.fm Top 10 Album Image Generator
+# Last.fm Top 10 Album Image Generator [![Project Status](http://stillmaintained.com/yesdevnull/Lastfm-Album-Image-Generator.png)](http://stillmaintained.com/yesdevnull/Lastfm-Album-Image-Generator)
 By Dan Barrett - [yesdevnull.net/lastfm](http://yesdevnull.net/lastfm)
 
 Easily get images for a top 10 list for your Last.fm profile.
