@@ -225,8 +225,8 @@ class LastfmController extends BaseController
      */
     public function generateImage($url, $error = false)
     {
-        $this->filename = public_path() . '/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
-        $this->filenameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
+        $this->filenameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . md5($this->result['name']) . '.png';      
+        $this->filename = public_path() . '/' . $this->filenameSansPath;
         
         if (Cache::has($this->filename)) {
             if (file_exists($this->filename)) {
