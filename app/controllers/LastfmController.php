@@ -226,14 +226,14 @@ class LastfmController extends BaseController
     public function generateImage($url, $error = false)
     {
         $this->filename = public_path() . '/' . $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
-        $this->fileNameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
+        $this->filenameSansPath = $this->username . '_' . $this->number . '_' . $this->result['playcount'] . '_' . $this->result['mbid'] . '.png';
         
         if (Cache::has($this->filename)) {
             if (file_exists($this->filename)) {
                 Log::info('Loaded cached object', [ 'file' => $this->filenameSansPath ]);
                 
                 $image = Image::open($this->filename);
-                
+
                 return $image->encode($this->filename, 90);
             }
         }
